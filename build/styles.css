@@ -1,0 +1,37 @@
+html, 
+body {
+    height: 100%;
+}
+
+body {
+  background: linear-gradient(to bottom,  #fcecfc 0%,#FF00C2 100%);
+  display: flex;
+  box-sizing: border;
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+  font-family: 'Indie Flower', cursive;
+  font-size: 46px;
+  font-weight: 700;
+}
+
+section {
+  align-self: center;
+  margin: auto;
+}
+
+.game-square {
+  padding: 0;
+  margin: 0;
+  height: 12px;
+  width: 12px; 
+  border: 1px black;
+}
+
+.row {
+  padding: 0;
+  height: 12px;
+  text-align: center;
+}
