@@ -24,7 +24,7 @@ section {
 
 .game-square {
   padding: 0;
-  margin: 0;
+  margin: 1px;
   height: 12px;
   width: 12px; 
   border: 1px black;
@@ -32,6 +32,7 @@ section {
 
 .row {
   padding: 0;
+  margin: 1px 0 1px 0;
   height: 12px;
   text-align: center;
 }

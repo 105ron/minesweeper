@@ -34,3 +34,14 @@ const gameGrid = () => {
 gameContainer.innerHTML = ''; //Clear container
 //creates grid for the DOM
 gameContainer.insertAdjacentHTML('afterbegin', gameGrid().join(''));
+
+const uncover = (target) => {
+  //okay, need to uncover square here...
+  console.log(target);
+};
+
+gameContainer.onclick = function(event) {
+  let target = event.target; // where was the click?
+  if (!target.classList.contains('hidden')) return; // not on TD? Then we're not interested
+  uncover(target);
+};
