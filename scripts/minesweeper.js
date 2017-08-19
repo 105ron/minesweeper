@@ -19,6 +19,7 @@ const difficultyLevels = {
   }
 }
 let gameArray;
+let minesPosition = []; //temp
 
 
 const gameGrid = () => {
@@ -49,31 +50,36 @@ gameContainer.onclick = function(event) {
   uncover(target);
 };
 
-const randomNumber = (max) => {
+const randomNumber = (max) => { //random number generator for mine placement
   return Math.floor(Math.random() * (max));
 };
 
-const createMines = (rows, cols) => {
+
+const buildBoard = (rows, cols) => {
   let mineGrid = [...Array(rows).keys()].map(i => Array(cols));
   let totalMines = difficultyLevels[level].mines;
-  let randX;
-  let randY;
-  while (totalMines > 0) {
-    randX = randomNumber(rows);
-    randY = randomNumber(cols);
-    if (mineGrid[randX][randY] === undefined) {
-      mineGrid[randX][randY] = 'mine';
-      totalMines -= 1;
+  const createMines = (mines) => {
+    let randX;
+    let randY;
+    let minesPlacement = [];
+    while (mines > 0) {
+      [randX, randY] = [randomNumber(rows), randomNumber(cols)];
+      if (mineGrid[randX][randY] === undefined) {
+        mineGrid[randX][randY] = 'mine';
+        minesPlacement.push([randX,randY]);
+        mines -= 1;
+      }
     }
-  }
-  return mineGrid;
+    return minesPlacement;
+  };
+  minesPosition = createMines(totalMines)
 };
 
 const startGame = () => {
   renderGrid();
   const rows = difficultyLevels[level].rows;
   const columns = difficultyLevels[level].columns;
-  gameArray = createMines(rows, columns);
+  gameArray = buildBoard(rows, columns);
 
 }
 
