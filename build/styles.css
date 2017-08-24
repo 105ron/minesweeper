@@ -22,12 +22,17 @@ section {
   margin: auto;
 }
 
+#game-container {
+  vertical-align: top;
+}
+
 .game-square {
   padding: 0;
   margin: 1px;
   height: 12px;
   width: 12px; 
   border: 1px black;
+  vertical-align: bottom;
 }
 
 .row {
@@ -35,4 +40,44 @@ section {
   margin: 1px 0 1px 0;
   height: 12px;
   text-align: center;
+}
+
+.zero{
+  background-color: lightgrey;
+}
+
+.one:after {
+  content: "1";
+}
+
+.two:after {
+  content: "2";
+}
+
+.three:after {
+  content: "3";
+}
+
+.four:after {
+  content: "4";
+}
+
+.five:after {
+  content: "5";
+}
+
+.six:after {
+  content: "6";
+}
+
+.seven:after {
+  content: "7";
+}
+
+.eight:after {
+  content: "8";
+}
+
+.nine:after {
+  content: "9";
 }

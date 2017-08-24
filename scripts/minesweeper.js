@@ -1,12 +1,11 @@
 'use strict';
 const level = "easy";
 const gameContainer = document.getElementById('game-container');
-const coords = (coord) => `${coord.row},${coord.col}`;
 const difficultyLevels = {
   easy: {
-    rows: 10,
-    columns: 10,
-    mines: 5
+    rows: 15,
+    columns: 15,
+    mines: 20
   },
   medium: {
     rows: 20,
@@ -29,13 +28,104 @@ const surroundingCoordinates = [
   [1, 0],
   [1, 1]
 ];
+const numberToWord = {
+  0: 'zero',
+  1: 'one',
+  2: 'two',
+  3: 'three',
+  4: 'four',
+  5: 'five',
+  6: 'six',
+  7: 'seven',
+  8: 'eight',
+  9: 'nine',
+  //temp
+  'mine': 'eight'
+};
 const MinesCoordinatesArray =[];
 let gameArray;
 let minesPosition = []; //temp
 
-const uncover = (target) => {
+const randomNumber = (max) => Math.floor(Math.random() * (max));
+
+const coords = (coord) => `${coord.row},${coord.col}`;
+
+const xCoordinate = (arr) => arr[0];
+
+const yCoordinate = (arr) => arr[1];
+
+const isValidPosition = (position) => {
+  const rows = difficultyLevels[level].rows;
+  const columns = difficultyLevels[level].columns;
+  const isValidRow = (0 <= xCoordinate(position) && xCoordinate(position) < rows);
+  const isValidCol = (0 <= yCoordinate(position) && yCoordinate(position) < columns);
+  return isValidRow && isValidCol;
+}
+
+const uncover = (x, y) => {
   //okay, need to uncover square here...
-  console.log(target);
+  const target = document.querySelector(`.pos${ x }-${ y }`);
+  if (target) {
+    const value = gameArray[x][y];
+    const classToAdd = numberToWord[value];
+    target.classList.toggle(classToAdd);
+    target.classList.toggle('hidden');
+  };
+};
+
+//add SumArray to Array protoype so we can get each mines surrounding boxes
+Array.prototype.SumArray = function(arr) {
+  let sum = this.map( (num, index) => {
+    return num + arr[index];
+  });
+  return sum;
+}
+
+//Our array is the stack of co-ordinates to uncover
+Array.prototype.ContainsIdenticalArray = function(arr) {
+  const results = this.map( arrays => {
+    return arrays.map( (num, index) => {
+      return num === arr[index];
+    });
+  });
+  //results is now an array of arrays with true/false for each position
+  const flattenedResults = results.map( x => {
+    return x.reduce( (accumulator, currentValue) => {
+      return accumulator && currentValue
+    },true);
+  });
+  //now flattened to true if both are identical
+  return !flattenedResults.includes(true);
+  //we return false if it found any matches in the stack
+}
+
+const findSquaresToUncover = (target) => {
+  let uncoverStack = [];
+  const xPosition = parseInt(target.getAttribute("data-x"));
+  const yPosition = parseInt(target.getAttribute("data-y"));
+  const notAlreadyQueued = box => uncoverStack.ContainsIdenticalArray(box);
+  const buildUncoverstack = (thisBox) => {
+    let value = gameArray[xCoordinate(thisBox)][yCoordinate(thisBox)];
+    try {
+      if (value === 0) {
+        surroundingCoordinates.forEach( (box) => {
+          let surroundingBox = box.SumArray(thisBox);
+          if (notAlreadyQueued(surroundingBox)) {
+            uncoverStack.push(surroundingBox);
+            buildUncoverstack(surroundingBox);
+          }
+        });
+      }
+    } catch(e) {
+      return;
+    }
+  };
+  uncoverStack.push([xPosition, yPosition]);
+  buildUncoverstack([xPosition, yPosition]);
+  uncoverStack.forEach( ( position ) => {
+    uncover(xCoordinate(position), yCoordinate(position));
+  });
+  console.log(uncoverStack);
 };
 
 const gameGrid = () => {
@@ -59,24 +149,14 @@ const renderGrid = () => {
 gameContainer.onclick = function(event) {
   let target = event.target; 
   if (!target.classList.contains('hidden')) return;
-  uncover(target);
+  findSquaresToUncover(target);
 };
 
-const randomNumber = (max) => Math.floor(Math.random() * (max));
-
-Array.prototype.SumArray = function(arr) {
-  let sum = this.map( (num, index) => {
-    return num + arr[index];
-  });
-  return sum;
-}
-
 const getNum = (testRow, testCol, grid) => {
-  console.log(testRow + "    -> col " + testCol);
+  //nest if statements to check for grid being between 0 <= testCol < difficultlyLevels[level].mines
+  //instead of try -> catch?
   try {
-    if (grid[testRow][testCol] === undefined) {
-      grid[testRow][testCol] = 1;
-    } else if (typeof(grid[testRow][testCol]) === 'number') {
+    if (typeof(grid[testRow][testCol]) === 'number') {
       grid[testRow][testCol] += 1;
     }
   } catch (e) {
@@ -90,9 +170,9 @@ const fillNums = (grid, minesArray) => {
   let checkBox;
   minesArray.forEach( mine => {
     surroundingCoordinates.forEach( box => {
-      checkBox = mine.SumArray(box);
-      testRow = checkBox[0];
-      testCol = checkBox[1];
+      checkBox = mine.SumArray(box); //add the mines co-ordinates to the 8 surrounding boxes by relative co-ordinates
+      testRow = xCoordinate(checkBox);
+      testCol = yCoordinate(checkBox);
       getNum(testRow, testCol, grid);
     });
   });
@@ -118,7 +198,6 @@ const createMines = (rows, cols) => {
         MinesCoordinatesArray.push([newMine.row, newMine.col])
     };
   }
-  console.log("mines at " + mines);
   return mines;
 };
 
@@ -130,12 +209,12 @@ const insertMines = (mineGrid, mines) => {
 
 const buildBoard = (rows, cols) => {
   //create empty grid
-  let mineGrid = [...Array(rows).keys()].map(i => Array(cols));
+  let mineGrid = [...Array(rows).keys()].map(i => Array(cols).fill(0));
   //create the cor-ordinates for the mines
   minesPosition = createMines(rows, cols)
   //insert the mines into mineGrid
   insertMines(mineGrid, minesPosition);
-  //let finalGrid = createMineGrid(minesPosition, mineGrid);
+  //number around each mine
   fillNums(mineGrid, MinesCoordinatesArray)
   return mineGrid;
 };
@@ -145,8 +224,7 @@ const startGame = () => {
   const rows = difficultyLevels[level].rows;
   const columns = difficultyLevels[level].columns;
   gameArray = buildBoard(rows, columns);
-
-}
+};
 
 // (global => {
   startGame();
