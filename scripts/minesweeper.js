@@ -18,16 +18,18 @@ const difficultyLevels = {
     mines: 99
   }
 }
+
 const surroundingCoordinates = [
-  [0, -1],
-  [0, 1],
   [-1, -1],
   [-1, 0],
   [-1, 1],
   [1, -1],
   [1, 0],
-  [1, 1]
+  [1, 1],
+  [0, -1],
+  [0, 1]
 ];
+
 const numberToWord = {
   0: 'zero',
   1: 'one',
@@ -60,12 +62,29 @@ const isValidPosition = (position) => {
   const isValidRow = (0 <= xCoordinate(position) && xCoordinate(position) < rows);
   const isValidCol = (0 <= yCoordinate(position) && yCoordinate(position) < columns);
   return isValidRow && isValidCol;
-}
+};
+
+const hasClass = (el, className) => {
+  return el.classList ? el.classList.contains(className) : new RegExp('\\b'+ className+'\\b').test(el.className);
+};
+	
+const addClass = (el, className) => {
+  if (el.classList) el.classList.add(className);
+  else if (!hasClass(el, className)) el.className += ' ' + className;
+};
+
+const notUncovered = (el, className) => {
+  const notUncovered = hasClass(el, className);
+  return notUncovered;
+};
 
 const uncover = (x, y) => {
   //okay, need to uncover square here...
+  if (x === 1) {
+    console.log(`in the 1 row with y being ${ y }`)
+  }
   const target = document.querySelector(`.pos${ x }-${ y }`);
-  if (target) {
+  if (target && notUncovered(target, 'hidden')) {
     const value = gameArray[x][y];
     const classToAdd = numberToWord[value];
     target.classList.toggle(classToAdd);
@@ -78,7 +97,8 @@ Array.prototype.SumArray = function(arr) {
   let sum = this.map( (num, index) => {
     return num + arr[index];
   });
-  return sum;
+  //if it's not valid just return the original array
+  return isValidPosition(sum) ? sum : arr;
 }
 
 //Our array is the stack of co-ordinates to uncover
@@ -117,6 +137,7 @@ const findSquaresToUncover = (target) => {
         });
       }
     } catch(e) {
+      console.log(e);
       return;
     }
   };
@@ -125,7 +146,6 @@ const findSquaresToUncover = (target) => {
   uncoverStack.forEach( ( position ) => {
     uncover(xCoordinate(position), yCoordinate(position));
   });
-  console.log(uncoverStack);
 };
 
 const gameGrid = () => {
