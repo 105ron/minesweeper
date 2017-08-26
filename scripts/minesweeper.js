@@ -97,8 +97,9 @@ Array.prototype.SumArray = function(arr) {
   let sum = this.map( (num, index) => {
     return num + arr[index];
   });
+  return sum;
   //if it's not valid just return the original array
-  return isValidPosition(sum) ? sum : arr;
+  //return isValidPosition(sum) ? sum : arr;
 }
 
 //Our array is the stack of co-ordinates to uncover
@@ -126,19 +127,18 @@ const findSquaresToUncover = (target) => {
   const notAlreadyQueued = box => uncoverStack.ContainsIdenticalArray(box);
   const buildUncoverstack = (thisBox) => {
     let value = gameArray[xCoordinate(thisBox)][yCoordinate(thisBox)];
-    try {
-      if (value === 0) {
-        surroundingCoordinates.forEach( (box) => {
-          let surroundingBox = box.SumArray(thisBox);
+    if (value === 0) {
+      surroundingCoordinates.forEach( (box) => {
+        let surroundingBox = box.SumArray(thisBox);
+        try {
           if (notAlreadyQueued(surroundingBox)) {
             uncoverStack.push(surroundingBox);
             buildUncoverstack(surroundingBox);
           }
-        });
-      }
-    } catch(e) {
-      console.log(e);
-      return;
+        } catch (e) {
+          console.log(e);
+        }
+      });
     }
   };
   uncoverStack.push([xPosition, yPosition]);
