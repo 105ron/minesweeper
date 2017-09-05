@@ -81,3 +81,7 @@ section {
 .nine:after {
   content: "9";
 }
+
+.flagged:after {
+  content: "f";
+}

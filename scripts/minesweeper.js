@@ -3,9 +3,9 @@ const level = "easy";
 const gameContainer = document.getElementById('game-container');
 const difficultyLevels = {
   easy: {
-    rows: 15,
-    columns: 15,
-    mines: 20
+    rows: 25,
+    columns: 25,
+    mines: 4
   },
   medium: {
     rows: 20,
@@ -47,6 +47,7 @@ const numberToWord = {
 const MinesCoordinatesArray =[];
 let gameArray;
 let minesPosition = []; //temp
+let flagsPosition = [];
 
 const randomNumber = (max) => Math.floor(Math.random() * (max));
 
@@ -80,9 +81,6 @@ const notUncovered = (el, className) => {
 
 const uncover = (x, y) => {
   //okay, need to uncover square here...
-  if (x === 1) {
-    console.log(`in the 1 row with y being ${ y }`)
-  }
   const target = document.querySelector(`.pos${ x }-${ y }`);
   if (target && notUncovered(target, 'hidden')) {
     const value = gameArray[x][y];
@@ -103,7 +101,7 @@ Array.prototype.SumArray = function(arr) {
 }
 
 //Our array is the stack of co-ordinates to uncover
-Array.prototype.ContainsIdenticalArray = function(arr) {
+Array.prototype.CompareArrays = function(arr) {
   const results = this.map( arrays => {
     return arrays.map( (num, index) => {
       return num === arr[index];
@@ -116,15 +114,25 @@ Array.prototype.ContainsIdenticalArray = function(arr) {
     },true);
   });
   //now flattened to true if both are identical
-  return !flattenedResults.includes(true);
-  //we return false if it found any matches in the stack
+  return flattenedResults;
 }
+
+const hasSameCoordinates = (stack, newBox) => {
+  //compares both elements in the array and is true if both are true
+  const arrayComparison = stack.CompareArrays(newBox);
+  return arrayComparison.includes(true);
+};
+
+const clickPostionToArray = (target) => {
+  const xPosition = parseInt(target.getAttribute("data-x"));
+  const yPosition = parseInt(target.getAttribute("data-y"));
+  return [xPosition, yPosition];
+};
 
 const findSquaresToUncover = (target) => {
   let uncoverStack = [];
-  const xPosition = parseInt(target.getAttribute("data-x"));
-  const yPosition = parseInt(target.getAttribute("data-y"));
-  const notAlreadyQueued = box => uncoverStack.ContainsIdenticalArray(box);
+  const clickPosition = clickPostionToArray(target);
+  const notAlreadyQueued = box => !hasSameCoordinates(uncoverStack, box);
   const buildUncoverstack = (thisBox) => {
     let value = gameArray[xCoordinate(thisBox)][yCoordinate(thisBox)];
     if (value === 0) {
@@ -136,13 +144,13 @@ const findSquaresToUncover = (target) => {
             buildUncoverstack(surroundingBox);
           }
         } catch (e) {
-          console.log(e);
+          // console.log(e);
         }
       });
     }
   };
-  uncoverStack.push([xPosition, yPosition]);
-  buildUncoverstack([xPosition, yPosition]);
+  uncoverStack.push(clickPosition);
+  buildUncoverstack(clickPosition);
   uncoverStack.forEach( ( position ) => {
     uncover(xCoordinate(position), yCoordinate(position));
   });
@@ -165,14 +173,50 @@ const renderGrid = () => {
   gameContainer.insertAdjacentHTML('afterbegin', grid);
 };
 
+const isAllMinesFlagged = () => {
 
-gameContainer.onclick = function(event) {
-  let target = event.target; 
+};
+
+const removeFlaggedMineArray = (clickPosition) => {
+  const findIdentical = flagsPosition.CompareArrays(clickPosition);
+  const position = findIdentical.findIndex( element => {
+    return element === true;
+  });
+  flagsPosition.splice(position, 1);
+  console.log(position);
+  console.log(flagsPosition);
+};
+
+const isFlaggedOrHidden = target => {
+  const squareHidden = hasClass(target, 'hidden');
+  const squareFlagged = hasClass(target, 'flagged');
+  return squareHidden || squareFlagged;
+};
+
+//right click mouse event
+window.oncontextmenu = (event) => {
+  const target = event.target;
+  const clickPosition = clickPostionToArray(target);
+  if (!isFlaggedOrHidden(target)) return; //only toggle flag if the square is already flagged or is still hidden
+  if (hasSameCoordinates(flagsPosition, clickPosition)) {
+    removeFlaggedMineArray(clickPosition);
+  } else {
+    flagsPosition.push(clickPosition);
+  }
+  target.classList.toggle('flagged');
+  target.classList.toggle('hidden');
+  return;     // cancel default menu
+}
+
+//left click mouse event
+gameContainer.onclick = (event) => {
+  const target = event.target; 
+  console.log(target);
   if (!target.classList.contains('hidden')) return;
   findSquaresToUncover(target);
 };
 
-const getNum = (testRow, testCol, grid) => {
+const setNum = (testRow, testCol, grid) => {
   //nest if statements to check for grid being between 0 <= testCol < difficultlyLevels[level].mines
   //instead of try -> catch?
   try {
@@ -193,7 +237,7 @@ const fillNums = (grid, minesArray) => {
       checkBox = mine.SumArray(box); //add the mines co-ordinates to the 8 surrounding boxes by relative co-ordinates
       testRow = xCoordinate(checkBox);
       testCol = yCoordinate(checkBox);
-      getNum(testRow, testCol, grid);
+      setNum(testRow, testCol, grid);
     });
   });
   return grid;
