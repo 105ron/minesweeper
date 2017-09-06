@@ -3,17 +3,17 @@ const gameContainer = document.getElementById('game-container');
 const difficultyButtons = document.getElementById('levels-container');
 const difficultyLevels = {
   easy: {
-    rows: 19,
-    columns: 19,
-    mines: 4
+    rows: 9,
+    columns: 9,
+    mines: 3
   },
   medium: {
-    rows: 20,
-    columns: 20,
-    mines: 20
+    rows: 16,
+    columns: 16,
+    mines: 40
   },
   hard: {
-    rows: 30,
+    rows: 16,
     columns: 30,
     mines: 99
   }
@@ -41,13 +41,12 @@ const numberToWord = {
   7: 'seven',
   8: 'eight',
   9: 'nine',
-  //temp
-  'mine': 'eight'
+  'mine': 'mine'
 };
-const minesCoordinatesArray =[];
+let minesCoordinatesArray =[];
 let level = "easy";
 let gameArray;
-let minesPosition = []; //temp
+let minesPosition = [];
 let flagsPosition = [];
 let won = false;
 
@@ -59,14 +58,6 @@ const xCoordinate = (arr) => arr[0];
 
 const yCoordinate = (arr) => arr[1];
 
-const isValidPosition = (position) => {
-  const rows = difficultyLevels[level].rows;
-  const columns = difficultyLevels[level].columns;
-  const isValidRow = (0 <= xCoordinate(position) && xCoordinate(position) < rows);
-  const isValidCol = (0 <= yCoordinate(position) && yCoordinate(position) < columns);
-  return isValidRow && isValidCol;
-};
-
 const hasClass = (el, className) => {
   return el.classList ? el.classList.contains(className) : new RegExp('\\b'+ className+'\\b').test(el.className);
 };
@@ -76,19 +67,18 @@ const addClass = (el, className) => {
   else if (!hasClass(el, className)) el.className += ' ' + className;
 };
 
-const notUncovered = (el, className) => {
-  const notUncovered = hasClass(el, className);
-  return notUncovered;
+const targetElement = (x, y) => {
+  return document.querySelector(`.pos${ x }-${ y }`);
 };
 
 const uncover = (x, y) => {
   //okay, need to uncover square here...
-  const target = document.querySelector(`.pos${ x }-${ y }`);
-  if (target && notUncovered(target, 'hidden')) {
+  const target = targetElement(x, y);
+  if (target && hasClass(target, 'hidden')) {
     const value = gameArray[x][y];
     const classToAdd = numberToWord[value];
-    target.classList.toggle(classToAdd);
-    target.classList.toggle('hidden');
+    addClass(target, classToAdd);
+    target.classList.toggle('hidden'); //remove hidden class
   };
 };
 
@@ -98,8 +88,6 @@ Array.prototype.SumArray = function(arr) {
     return num + arr[index];
   });
   return sum;
-  //if it's not valid just return the original array
-  //return isValidPosition(sum) ? sum : arr;
 }
 
 //Our array is the stack of co-ordinates to uncover
@@ -115,7 +103,7 @@ Array.prototype.CompareArrays = function(arr) {
       return accumulator && currentValue
     },true);
   });
-  //now flattened to true if both are identical
+  //now flattened to true if both are identical, otherwise false
   return flattenedResults;
 }
 
@@ -145,19 +133,21 @@ const findSquaresToUncover = (target, clickPosition) => {
             buildUncoverstack(surroundingBox);
           }
         } catch (e) {
-          // console.log(e);
+          // console.log(e); //for development only
         }
       });
     }
   };
-  uncoverStack.push(clickPosition);
-  buildUncoverstack(clickPosition);
+  uncoverStack.push(clickPosition); //uncover the box we clicked
+  buildUncoverstack(clickPosition); //now start looking at surrounding boxes, uncover if they are 0
   uncoverStack.forEach( ( position ) => {
+    //reveal all the boxes in the stack
     uncover(xCoordinate(position), yCoordinate(position));
   });
 };
 
 const gameGrid = () => {
+  //the grid to be inserted into the DOM
   const grid = Array.apply(null, Array(difficultyLevels[level].columns)).map( (x, xIndex) => { 
     let row = Array.apply(null, Array(difficultyLevels[level].rows)).map( (y, yIndex) => {
       return `<button class="hidden game-square pos${ xIndex }-${ yIndex }" 
@@ -174,6 +164,24 @@ const renderGrid = () => {
   gameContainer.insertAdjacentHTML('afterbegin', grid);
 };
 
+const uncoverMines =  classToAdd => {
+  //for when we win we add flags to all mines, lose and we display the mines
+  minesCoordinatesArray.forEach( position  => {
+    const x = xCoordinate(position);
+    const y = yCoordinate(position);
+    const target = targetElement(x, y);
+    addClass(target, classToAdd);
+  });
+}
+
+const uncoverNumbers = () => {
+  const hiddenSquares = document.querySelectorAll('.hidden');
+  hiddenSquares.forEach( box => {
+    const position = clickPostionToArray(box);
+    uncover(xCoordinate(position),yCoordinate(position));
+  });
+};
+
 const checkForWin = () => {
   const isWinner = () => {
   let results = flagsPosition.map( eachFlag => {
@@ -186,11 +194,14 @@ const checkForWin = () => {
     const hiddenElements = document.querySelectorAll('.hidden').length;
     const flagged = flagsPosition.length
     const onlyMinesHidden = ((mines - hiddenElements - flagged) === 0);
-    return correctAmount && allCorrectPosition || onlyMinesHidden;
+    return (correctAmount && allCorrectPosition) || onlyMinesHidden;
+    /*we have the same amount of flags as mines && All the flags are placed over the mines
+    OR the only square left uncovered are mines (*/
   }
   if (isWinner()) {
-    alert('winner');
-    won = true;
+    uncoverMines('flagged')
+    uncoverNumbers();
+    won = true; //stops the click events in the gameContainer
   }
 };
 
@@ -208,52 +219,46 @@ const isFlaggedOrHidden = target => {
   return squareHidden || squareFlagged;
 };
 
-//right click mouse event
-window.oncontextmenu = (event) => {
+const rightClick = (event) => {
   if (won) return; //disable click on grid after winning
   const target = event.target;
   const clickPosition = clickPostionToArray(target);
   if (!isFlaggedOrHidden(target)) return; //only toggle flag if the square is already flagged or is still hidden
   if (hasSameCoordinates(flagsPosition, clickPosition)) {
-    removeFlaggedMineArray(clickPosition);
+    removeFlaggedMineArray(clickPosition); //remove the flag position from the flagsPosition array
   } else {
     flagsPosition.push(clickPosition);
   }
   target.classList.toggle('flagged');
   target.classList.toggle('hidden');
   checkForWin();
-  return;     // cancel default menu
 }
 
-const uncoverMines = () => {
-  minesCoordinatesArray.forEach( position  => {
-    uncover(xCoordinate(position), yCoordinate(position));
-  });
-}
-
-//left click mouse event
-gameContainer.onclick = (event) => {
+const leftClick = (event) => {
   if (won) return; //disable click on grid after winning
   const target = event.target; 
   if (!target.classList.contains('hidden')) return;
   const clickPosition = clickPostionToArray(target);
   const positionIsMine = minesCoordinatesArray.CompareArrays(clickPosition).includes(true);
   if (positionIsMine) {
-    uncoverMines();
+    addClass(target, 'red');
+    uncoverMines('mine');
     won = true;
-    alert('you lose')
-    return;
+    return; //to stop checkForWin() from running 
   }
   findSquaresToUncover(target, clickPosition);
   checkForWin();
 };
 
-
 difficultyButtons.onclick = (event) => {
   const target = event.target;
   level = target.getAttribute('data-level');
+  won = false;
+  minesCoordinatesArray =[];
+  gameArray = [];
+  minesPosition = [];
+  flagsPosition = [];
   startGame();
-  console.log(level);
 };
 
 const setNum = (testRow, testCol, grid) => {
@@ -327,8 +332,12 @@ const startGame = () => {
   const rows = difficultyLevels[level].rows;
   const columns = difficultyLevels[level].columns;
   gameArray = buildBoard(rows, columns);
+  gameContainer.onclick = (event) => {
+    leftClick(event)
+  }
+  window.oncontextmenu = (event) => {
+    rightClick(event);
+  }
 };
 
-// (global => {
-  startGame();
-// })(window);
+startGame();

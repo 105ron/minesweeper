@@ -18,12 +18,12 @@ h1 {
 }
 
 section {
-  align-self: center;
   margin: auto;
 }
 
 #game-container {
   vertical-align: top;
+  align-self: center;
 }
 
 .game-square {
@@ -84,4 +84,9 @@ section {
 
 .flagged:after {
   content: "f";
+}
+
+.mine:after {
+  /*make sure this overwrites flagged class*/
+  content: ".8";
 }
