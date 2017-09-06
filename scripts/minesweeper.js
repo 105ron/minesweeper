@@ -1,10 +1,10 @@
 'use strict';
-const level = "easy";
 const gameContainer = document.getElementById('game-container');
+const difficultyButtons = document.getElementById('levels-container');
 const difficultyLevels = {
   easy: {
-    rows: 25,
-    columns: 25,
+    rows: 19,
+    columns: 19,
     mines: 4
   },
   medium: {
@@ -44,10 +44,12 @@ const numberToWord = {
   //temp
   'mine': 'eight'
 };
-const MinesCoordinatesArray =[];
+const minesCoordinatesArray =[];
+let level = "easy";
 let gameArray;
 let minesPosition = []; //temp
 let flagsPosition = [];
+let won = false;
 
 const randomNumber = (max) => Math.floor(Math.random() * (max));
 
@@ -129,9 +131,8 @@ const clickPostionToArray = (target) => {
   return [xPosition, yPosition];
 };
 
-const findSquaresToUncover = (target) => {
+const findSquaresToUncover = (target, clickPosition) => {
   let uncoverStack = [];
-  const clickPosition = clickPostionToArray(target);
   const notAlreadyQueued = box => !hasSameCoordinates(uncoverStack, box);
   const buildUncoverstack = (thisBox) => {
     let value = gameArray[xCoordinate(thisBox)][yCoordinate(thisBox)];
@@ -173,18 +174,32 @@ const renderGrid = () => {
   gameContainer.insertAdjacentHTML('afterbegin', grid);
 };
 
-const isAllMinesFlagged = () => {
-
+const checkForWin = () => {
+  const isWinner = () => {
+  let results = flagsPosition.map( eachFlag => {
+    const comparison = minesCoordinatesArray.CompareArrays(eachFlag);
+    return comparison.includes(true);
+  });
+    const mines = difficultyLevels[level].mines;
+    const correctAmount = (mines === results.length);
+    const allCorrectPosition = !results.includes(false);
+    const hiddenElements = document.querySelectorAll('.hidden').length;
+    const flagged = flagsPosition.length
+    const onlyMinesHidden = ((mines - hiddenElements - flagged) === 0);
+    return correctAmount && allCorrectPosition || onlyMinesHidden;
+  }
+  if (isWinner()) {
+    alert('winner');
+    won = true;
+  }
 };
 
 const removeFlaggedMineArray = (clickPosition) => {
   const findIdentical = flagsPosition.CompareArrays(clickPosition);
-  const position = findIdentical.findIndex( element => {
+  const index = findIdentical.findIndex( element => {
     return element === true;
   });
-  flagsPosition.splice(position, 1);
-  console.log(position);
-  console.log(flagsPosition);
+  flagsPosition.splice(index, 1);
 };
 
 const isFlaggedOrHidden = target => {
@@ -195,6 +210,7 @@ const isFlaggedOrHidden = target => {
 
 //right click mouse event
 window.oncontextmenu = (event) => {
+  if (won) return; //disable click on grid after winning
   const target = event.target;
   const clickPosition = clickPostionToArray(target);
   if (!isFlaggedOrHidden(target)) return; //only toggle flag if the square is already flagged or is still hidden
@@ -205,15 +221,39 @@ window.oncontextmenu = (event) => {
   }
   target.classList.toggle('flagged');
   target.classList.toggle('hidden');
+  checkForWin();
   return;     // cancel default menu
+}
+
+const uncoverMines = () => {
+  minesCoordinatesArray.forEach( position  => {
+    uncover(xCoordinate(position), yCoordinate(position));
+  });
 }
 
 //left click mouse event
 gameContainer.onclick = (event) => {
+  if (won) return; //disable click on grid after winning
   const target = event.target; 
-  console.log(target);
   if (!target.classList.contains('hidden')) return;
-  findSquaresToUncover(target);
+  const clickPosition = clickPostionToArray(target);
+  const positionIsMine = minesCoordinatesArray.CompareArrays(clickPosition).includes(true);
+  if (positionIsMine) {
+    uncoverMines();
+    won = true;
+    alert('you lose')
+    return;
+  }
+  findSquaresToUncover(target, clickPosition);
+  checkForWin();
+};
+
+
+difficultyButtons.onclick = (event) => {
+  const target = event.target;
+  level = target.getAttribute('data-level');
+  startGame();
+  console.log(level);
 };
 
 const setNum = (testRow, testCol, grid) => {
@@ -255,11 +295,10 @@ const createMines = (rows, cols) => {
       row: randomNumber(rows),
       col: randomNumber(cols)
     };
-
     if(mines.every(checkDups)) {
         mines.push(newMine);
         //Also a copy of our mines co-ordinates as an array
-        MinesCoordinatesArray.push([newMine.row, newMine.col])
+        minesCoordinatesArray.push([newMine.row, newMine.col])
     };
   }
   return mines;
@@ -279,7 +318,7 @@ const buildBoard = (rows, cols) => {
   //insert the mines into mineGrid
   insertMines(mineGrid, minesPosition);
   //number around each mine
-  fillNums(mineGrid, MinesCoordinatesArray)
+  fillNums(mineGrid, minesCoordinatesArray)
   return mineGrid;
 };
 
