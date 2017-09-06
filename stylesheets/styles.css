@@ -3,12 +3,15 @@ body {
     height: 100%;
 }
 
-body {
-  background: -webkit-gradient(linear,  left top, left bottom,  from(#fcecfc),to(#FF00C2));
+html { 
+  background: -webkit-gradient(linear,  left top, left bottom,  from(#fcecfc),to(#FF00C2)); 
   background: linear-gradient(to bottom,  #fcecfc 0%,#FF00C2 100%);
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
+  background: url(../images/bg-image.jpg) no-repeat center center fixed; 
+  background-size: cover;
+}
+
+body {
+  /* display: flex; */
   -webkit-box-sizing: border;
           box-sizing: border;
 }
@@ -22,13 +25,17 @@ h1 {
 }
 
 section {
-  margin: auto;
+   margin: auto; 
+}
+
+#levels-container {
+  text-align: center;
 }
 
 #game-container {
   vertical-align: top;
-  -ms-flex-item-align: center;
-      align-self: center;
+   -ms-flex-item-align: center;
+       align-self: center; 
 }
 
 .game-square {

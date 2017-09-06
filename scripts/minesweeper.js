@@ -5,7 +5,7 @@ const difficultyLevels = {
   easy: {
     rows: 9,
     columns: 9,
-    mines: 3
+    mines: 10
   },
   medium: {
     rows: 16,
@@ -63,6 +63,7 @@ const hasClass = (el, className) => {
 };
 	
 const addClass = (el, className) => {
+  console.log(el);
   if (el.classList) el.classList.add(className);
   else if (!hasClass(el, className)) el.className += ' ' + className;
 };
@@ -148,8 +149,8 @@ const findSquaresToUncover = (target, clickPosition) => {
 
 const gameGrid = () => {
   //the grid to be inserted into the DOM
-  const grid = Array.apply(null, Array(difficultyLevels[level].columns)).map( (x, xIndex) => { 
-    let row = Array.apply(null, Array(difficultyLevels[level].rows)).map( (y, yIndex) => {
+  const grid = Array.apply(null, Array(difficultyLevels[level].rows)).map( (x, xIndex) => { 
+    let row = Array.apply(null, Array(difficultyLevels[level].columns)).map( (y, yIndex) => {
       return `<button class="hidden game-square pos${ xIndex }-${ yIndex }" 
               data-x="${ xIndex }" data-y="${ yIndex }"></button>`;
     });
@@ -317,6 +318,8 @@ const insertMines = (mineGrid, mines) => {
 
 const buildBoard = (rows, cols) => {
   //create empty grid
+  console.log(`rows ${ rows }`)
+  console.log(`columns ${ cols }`)
   let mineGrid = [...Array(rows).keys()].map(i => Array(cols).fill(0));
   //create the cor-ordinates for the mines
   minesPosition = createMines(rows, cols)
