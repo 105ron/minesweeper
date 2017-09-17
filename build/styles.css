@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'mlp';
+  src: url('mlp.woff2') format('woff2'),
+       url('mlp.woff') format('woff'),
+       url('mlp.ttf')  format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html, 
 body {
     height: 100%;
@@ -15,10 +24,11 @@ body {
 }
 
 h1 {
-  margin-top: 0;
+  width: 700px;
+  margin: 10px auto 12px auto;
   text-align: center;
-  font-family: 'Indie Flower', cursive;
-  font-size: 46px;
+  font-family: 'mlp', 'Indie Flower', cursive;
+  font-size: 64px;
   font-weight: 700;
 }
 
@@ -27,6 +37,8 @@ section {
 }
 
 #levels-container {
+  width: 700px;
+  margin: 0 auto 40px auto;
   text-align: center;
 }
 
@@ -38,21 +50,26 @@ section {
 .game-square {
   padding: 0;
   margin: 1px;
-  height: 12px;
-  width: 12px; 
+  height: 20px;
+  width: 20px; 
   border: 1px black;
   vertical-align: bottom;
 }
 
 .row {
   padding: 0;
-  margin: 1px 0 1px 0;
-  height: 12px;
+  margin: 1px auto 1px auto;
+  height: 20px;
+  width: 700px;
   text-align: center;
 }
 
+.zero, .one, .two, .three {
+  background-color: rgba(255, 255, 255, 0.0);
+}
+
 .zero{
-  background-color: lightgrey;
+  background-color: rgba(255, 255, 255, 0.0);
 }
 
 .one:after {

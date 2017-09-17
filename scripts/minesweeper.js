@@ -339,7 +339,9 @@ const startGame = () => {
     leftClick(event)
   }
   window.oncontextmenu = (event) => {
+    event.preventDefault();
     rightClick(event);
+    return;
   }
 };
 
