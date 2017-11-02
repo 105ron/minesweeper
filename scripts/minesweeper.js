@@ -63,10 +63,14 @@ const hasClass = (el, className) => {
 };
 	
 const addClass = (el, className) => {
-  console.log(el);
   if (el.classList) el.classList.add(className);
   else if (!hasClass(el, className)) el.className += ' ' + className;
 };
+
+function removeClass(el, className) {
+	    if (el.classList) el.classList.remove(className);
+	    else el.className = el.className.replace(new RegExp('\\b'+ className+'\\b', 'g'), '');
+}
 
 const targetElement = (x, y) => {
   return document.querySelector(`.pos${ x }-${ y }`);
@@ -172,6 +176,7 @@ const uncoverMines =  classToAdd => {
     const y = yCoordinate(position);
     const target = targetElement(x, y);
     addClass(target, classToAdd);
+    removeClass(target, 'hidden');
   });
 }
 
@@ -318,8 +323,6 @@ const insertMines = (mineGrid, mines) => {
 
 const buildBoard = (rows, cols) => {
   //create empty grid
-  console.log(`rows ${ rows }`)
-  console.log(`columns ${ cols }`)
   let mineGrid = [...Array(rows).keys()].map(i => Array(cols).fill(0));
   //create the cor-ordinates for the mines
   minesPosition = createMines(rows, cols)

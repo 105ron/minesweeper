@@ -42,6 +42,18 @@ section {
   text-align: center;
 }
 
+.tagline {
+  margin: 65px auto 20px auto;
+  width: 600px;
+  text-align: center
+}
+
+.tagline p {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 16px;
+  font-style: italic;
+}
+
 #game-container {
   vertical-align: top;
    align-self: center; 
@@ -56,6 +68,11 @@ section {
   vertical-align: bottom;
 }
 
+.hidden {
+  background: url(../images/hay.png) no-repeat center center; 
+  background-size: cover;
+}
+
 .row {
   padding: 0;
   margin: 1px auto 1px auto;
@@ -64,55 +81,68 @@ section {
   text-align: center;
 }
 
-.zero, .one, .two, .three {
+.zero, .one, .two, .three, .four, .five, .six, .seven, .eight, .nine {
   background-color: rgba(255, 255, 255, 0.0);
-}
-
-.zero{
-  background-color: rgba(255, 255, 255, 0.0);
+  font-weight: bold;
 }
 
 .one:after {
   content: "1";
+  color: blue;
 }
 
 .two:after {
   content: "2";
+  color: green;
 }
 
 .three:after {
   content: "3";
+  color: red;
 }
 
 .four:after {
   content: "4";
+  color: purple;
 }
 
 .five:after {
   content: "5";
+  color: maroon;
 }
 
 .six:after {
   content: "6";
+  color: rosybrown;
 }
 
 .seven:after {
   content: "7";
+  color: slategray;
 }
 
 .eight:after {
   content: "8";
+  color: aqua;
 }
 
 .nine:after {
   content: "9";
+  color: orange;
 }
 
-.flagged:after {
-  content: "f";
+.flagged {
+  background: url(../images/flag.png) no-repeat center center; 
+  background-size: cover;
 }
 
-.mine:after {
-  /*make sure this overwrites flagged class*/
-  content: ".8";
+.mine {
+  background: url(../images/mine.png) no-repeat center center; 
+  background-size: cover;
+}
+
+/* for mine that has been clicked to end game */
+.red {
+  background: url(../images/wrong-click.png) no-repeat center center; 
+  background-size: contain;
 }
