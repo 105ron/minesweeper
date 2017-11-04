@@ -5,7 +5,7 @@ const difficultyLevels = {
   easy: {
     rows: 9,
     columns: 9,
-    mines: 4
+    mines: 10
   },
   medium: {
     rows: 16,
