@@ -5,7 +5,7 @@ const difficultyLevels = {
   easy: {
     rows: 9,
     columns: 9,
-    mines: 10
+    mines: 4
   },
   medium: {
     rows: 16,
@@ -188,6 +188,13 @@ const uncoverNumbers = () => {
   });
 };
 
+const updateMinesCountDisplay = (flags) => {
+  const minesDisplay = document.getElementById('mines-left');
+  const mines = difficultyLevels[level].mines;
+  const minesLeft = mines - flags;
+  minesDisplay.innerText = minesLeft;
+}
+
 const checkForWin = () => {
   const isWinner = () => {
   let results = flagsPosition.map( eachFlag => {
@@ -207,10 +214,14 @@ const checkForWin = () => {
   if (isWinner()) {
     uncoverMines('flagged')
     uncoverNumbers();
+    //since we've won we will pass in the number of mines so the game displays 0
+    updateMinesCountDisplay(difficultyLevels[level].mines);
     won = true; //stops the click events in the gameContainer
+    alert('Congratulations, why not try cleaning another stable');
   }
 };
 
+//Remove flag co-ordinates from the flagsPosition array when the player removes a flag
 const removeFlaggedMineArray = (clickPosition) => {
   const findIdentical = flagsPosition.CompareArrays(clickPosition);
   const index = findIdentical.findIndex( element => {
@@ -237,6 +248,7 @@ const rightClick = (event) => {
   }
   target.classList.toggle('flagged');
   target.classList.toggle('hidden');
+  updateMinesCountDisplay(flagsPosition.length);
   checkForWin();
 }
 
@@ -330,6 +342,8 @@ const buildBoard = (rows, cols) => {
   insertMines(mineGrid, minesPosition);
   //number around each mine
   fillNums(mineGrid, minesCoordinatesArray)
+  //set the number of mines left in the display
+  updateMinesCountDisplay(0);
   return mineGrid;
 };
 
